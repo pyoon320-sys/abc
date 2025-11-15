@@ -1,84 +1,76 @@
 import streamlit as st
-import random
-import time
 
-st.set_page_config(page_title="러너 게임", layout="centered")
-st.title("🏃 러너 게임 (Temple Run 간단 버전)")
+st.title("🎧 감성 플레이리스트 추천기 – 확장 버전")
+st.write("오늘의 기분에 맞는 노래를 더 다양하게 추천해드릴게요 ☁️💖")
 
-# 초기화
-if "player_pos" not in st.session_state:
-    st.session_state.player_pos = 1  # 0=왼쪽, 1=중앙, 2=오른쪽
+# 더욱 다양한 플레이리스트 데이터
+playlists = {
+    "설레는 느낌 ✨": [
+        "IVE - LOVE DIVE",
+        "NewJeans - Super Shy",
+        "세븐틴 - 아주 NICE",
+        "NCT DREAM - Candy",
+        "STAYC - ASAP",
+        "르세라핌 - Perfect Night",
+        "선미 - 보름달",
+        "오마이걸 - 살짝 설렜어",
+        "TXT - Our Summer",
+        "아이유 - Blueming",
+    ],
+    "힐링하고 싶어 🍀": [
+        "아이유 - Love Poem",
+        "적재 - 별 보러 가자",
+        "폴킴 - 비",
+        "태연 - 그대라는 시",
+        "멜로망스 - 선물",
+        "백예린 - Maybe It's Not Our Fault",
+        "경서 - 밤하늘의 별을",
+        "치즈 - Mood Indigo",
+        "우효(Oohyo) - 꿀차",
+        "정준일 - 안아줘",
+    ],
+    "감성에 잠기고 싶어 🌙": [
+        "아이유 - 밤편지",
+        "디오 - 별 떨어진다",
+        "백예린 - Square",
+        "정승환 - 너였다면",
+        "도영 - 고백",
+        "10cm - 폰서트",
+        "우원재 - 시차",
+        "크러쉬 - 가끔",
+        "딘 - instagram",
+        "백예린 - Bye bye my blue",
+    ],
+    "신나게 달리고 싶어 🔥": [
+        "BLACKPINK - Pink Venom",
+        "LE SSERAFIM - ANTIFRAGILE",
+        "NewJeans - ETA",
+        "지코 - 아무노래",
+        "NCT WISH - WISH",
+        "STRAY KIDS - S-Class",
+        "ITZY - Dalla Dalla",
+        "aespa - Spicy",
+        "TWICE - Talk That Talk",
+        "제시 - 눈누난나",
+    ],
+    "비 오는 날 듣기 좋은 노래 🌧": [
+        "헤이즈 - 비도 오고 그래서",
+        "아이유 - Rain Drop",
+        "폴킴 - 모든 날, 모든 순간",
+        "한요한 - 비",
+        "윤하 - 사건의 지평선",
+        "로이킴 - 봄봄봄",
+        "루시 - 개화",
+        "정키 - 부담이 돼",
+        "소유 - I Miss You",
+        "스탠딩에그 - 오래된 노래"
+    ],
+}
 
-if "obstacles" not in st.session_state:
-    st.session_state.obstacles = []  # (lane)
-    
-if "score" not in st.session_state:
-    st.session_state.score = 0
+# 기분 선택
+mood = st.selectbox("지금 당신의 기분은?", list(playlists.keys()))
 
-if "game_over" not in st.session_state:
-    st.session_state.game_over = False
-
-# 장애물 생성
-def spawn_obstacle():
-    lane = random.choice([0,1,2])
-    st.session_state.obstacles.append(lane)
-
-# 장애물 진행
-def update_obstacles():
-    if len(st.session_state.obstacles) > 6:
-        st.session_state.obstacles.pop(0)
-
-# 충돌 체크
-def check_collision():
-    if len(st.session_state.obstacles) > 0:
-        last_lane = st.session_state.obstacles[-1]
-        if last_lane == st.session_state.player_pos:
-            st.session_state.game_over = True
-
-# 게임 화면 출력
-def render_game():
-    display = ""
-
-    lanes = ["⬜", "⬜", "⬜"]
-    lanes[st.session_state.player_pos] = "🙂"
-
-    display += " | ".join(lanes) + "\n\n"
-    display += "▼ 장애물 ▼\n"
-
-    # 장애물 표시
-    for i, lane in enumerate(reversed(st.session_state.obstacles)):
-        row = [" ", " ", " "]
-        row[lane] = "⬛"
-        display += " | ".join(row) + "\n"
-
-    st.text(display)
-
-# 버튼 UI
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    if st.button("⬅️ 왼쪽"):
-        st.session_state.player_pos = max(0, st.session_state.player_pos - 1)
-
-with col3:
-    if st.button("➡️ 오른쪽"):
-        st.session_state.player_pos = min(2, st.session_state.player_pos + 1)
-
-# 게임 루프
-if not st.session_state.game_over:
-    spawn_obstacle()
-    update_obstacles()
-    check_collision()
-    st.session_state.score += 1
-
-render_game()
-
-st.write(f"🏆 점수: **{st.session_state.score}**")
-
-if st.session_state.game_over:
-    st.error("💥 충돌! 게임 오버!")
-    if st.button("다시 시작"):
-        st.session_state.player_pos = 1
-        st.session_state.obstacles = []
-        st.session_state.score = 0
-        st.session_state.game_over = False
+if st.button("플레이리스트 추천받기 🎵"):
+    st.subheader(f"'{mood}'에 맞춘 플레이리스트 🎶")
+    for song in playlists[mood]:
+        st.write(f"💚 {song}")
