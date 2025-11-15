@@ -1,4 +1,4 @@
-iimport streamlit as st
+import streamlit as st
 import random
 import time
 
@@ -43,4 +43,42 @@ def render_game():
     lanes[st.session_state.player_pos] = "🙂"
 
     display += " | ".join(lanes) + "\n\n"
-    display += "▼ 장애물
+    display += "▼ 장애물 ▼\n"
+
+    # 장애물 표시
+    for i, lane in enumerate(reversed(st.session_state.obstacles)):
+        row = [" ", " ", " "]
+        row[lane] = "⬛"
+        display += " | ".join(row) + "\n"
+
+    st.text(display)
+
+# 버튼 UI
+col1, col2, col3 = st.columns(3)
+
+with col1:
+    if st.button("⬅️ 왼쪽"):
+        st.session_state.player_pos = max(0, st.session_state.player_pos - 1)
+
+with col3:
+    if st.button("➡️ 오른쪽"):
+        st.session_state.player_pos = min(2, st.session_state.player_pos + 1)
+
+# 게임 루프
+if not st.session_state.game_over:
+    spawn_obstacle()
+    update_obstacles()
+    check_collision()
+    st.session_state.score += 1
+
+render_game()
+
+st.write(f"🏆 점수: **{st.session_state.score}**")
+
+if st.session_state.game_over:
+    st.error("💥 충돌! 게임 오버!")
+    if st.button("다시 시작"):
+        st.session_state.player_pos = 1
+        st.session_state.obstacles = []
+        st.session_state.score = 0
+        st.session_state.game_over = False
