@@ -1,71 +1,46 @@
-import streamlit as st
+iimport streamlit as st
+import random
+import time
 
-st.title("🧩 미로 탈출 게임")
+st.set_page_config(page_title="러너 게임", layout="centered")
+st.title("🏃 러너 게임 (Temple Run 간단 버전)")
 
-# 미로(벽=1, 길=0, 목표=2)
-maze = [
-    [1,1,1,1,1,1,1],
-    [1,0,0,0,1,0,1],
-    [1,0,1,0,0,0,1],
-    [1,0,1,1,1,0,1],
-    [1,0,0,0,1,0,1],
-    [1,1,1,0,0,2,1],
-    [1,1,1,1,1,1,1]
-]
+# 초기화
+if "player_pos" not in st.session_state:
+    st.session_state.player_pos = 1  # 0=왼쪽, 1=중앙, 2=오른쪽
 
-# 플레이어 시작 위치
-if "player" not in st.session_state:
-    st.session_state.player = [1,1]  # (y,x)
+if "obstacles" not in st.session_state:
+    st.session_state.obstacles = []  # (lane)
+    
+if "score" not in st.session_state:
+    st.session_state.score = 0
 
-player_y, player_x = st.session_state.player
+if "game_over" not in st.session_state:
+    st.session_state.game_over = False
 
-# 미로 출력
-def draw_maze():
+# 장애물 생성
+def spawn_obstacle():
+    lane = random.choice([0,1,2])
+    st.session_state.obstacles.append(lane)
+
+# 장애물 진행
+def update_obstacles():
+    if len(st.session_state.obstacles) > 6:
+        st.session_state.obstacles.pop(0)
+
+# 충돌 체크
+def check_collision():
+    if len(st.session_state.obstacles) > 0:
+        last_lane = st.session_state.obstacles[-1]
+        if last_lane == st.session_state.player_pos:
+            st.session_state.game_over = True
+
+# 게임 화면 출력
+def render_game():
     display = ""
-    for y, row in enumerate(maze):
-        for x, cell in enumerate(row):
-            if [y,x] == st.session_state.player:
-                display += "🙂 "         # 플레이어 위치
-            elif cell == 1:
-                display += "⬛ "         # 벽
-            elif cell == 2:
-                display += "🏁 "         # 목표
-            else:
-                display += "⬜ "
-        display += "\n"
-    st.text(display)
 
-draw_maze()
+    lanes = ["⬜", "⬜", "⬜"]
+    lanes[st.session_state.player_pos] = "🙂"
 
-# 이동 함수
-def move(dy, dx):
-    new_y = st.session_state.player[0] + dy
-    new_x = st.session_state.player[1] + dx
-
-    if maze[new_y][new_x] != 1:   # 벽이 아니면 이동
-        st.session_state.player = [new_y, new_x]
-
-# 버튼 UI
-col1, col2, col3 = st.columns(3)
-with col2:
-    if st.button("⬆️ 위"):
-        move(-1, 0)
-
-with col1:
-    if st.button("⬅️ 왼쪽"):
-        move(0, -1)
-
-with col3:
-    if st.button("➡️ 오른쪽"):
-        move(0, 1)
-
-col1, col2, col3 = st.columns(3)
-with col2:
-    if st.button("⬇️ 아래"):
-        move(1, 0)
-
-# 승리 체크
-if maze[player_y][player_x] == 2:
-    st.success("🎉 탈출 성공!")
-    if st.button("게임 다시 시작"):
-        st.session_state.player = [1,1]
+    display += " | ".join(lanes) + "\n\n"
+    display += "▼ 장애물
